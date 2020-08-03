@@ -1,11 +1,11 @@
-RSpec.describe Formfiller do
+RSpec.describe FormFiller do
   it "has a version number" do
-    expect(Formfiller::VERSION).not_to be nil
+    expect(FormFiller::VERSION).not_to be nil
   end
 end
 
 
-RSpec.describe Formfiller::Form do
+RSpec.describe FormFiller::Form do
   subject(:form) { described_class.new(template: form_pdf) }
   let(:form_pdf) { File.dirname(__FILE__) +"/fixtures/files/ga.pdf" }
   
@@ -14,9 +14,9 @@ RSpec.describe Formfiller::Form do
   end
 end
 
-RSpec.describe Formfiller::Signer do
+RSpec.describe FormFiller::Signer do
   subject(:signer) { described_class.new(form: form, signature: signature, signature_field_name: signature_field) }
-  let(:form) { Formfiller::Form.new(template: template_pdf) }
+  let(:form) { FormFiller::Form.new(template: template_pdf) }
   let(:template_pdf) { File.dirname(__FILE__) +"/fixtures/files/ga.pdf" }
   let(:signature) { File.dirname(__FILE__) +"/fixtures/files/signature.png"  }
   let(:signature_field) { "voter_signature" }

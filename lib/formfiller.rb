@@ -2,7 +2,7 @@ require_relative "formfiller/version"
 require_relative "formfiller/itext"
 require_relative "field"
 
-module Formfiller
+module FormFiller
   class Error < StandardError; end
   
   class Form

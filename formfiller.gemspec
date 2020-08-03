@@ -2,7 +2,7 @@ require_relative 'lib/formfiller/version'
 
 Gem::Specification.new do |spec|
   spec.name          = "formfiller"
-  spec.version       = Formfiller::VERSION
+  spec.version       = FormFiller::VERSION
   spec.authors       = ["Cliff Wulfman"]
   spec.email         = ["cwulfman@gmail.com"]
 

@@ -26,8 +26,8 @@ end
 
 parser.parse!
 
-form = Formfiller::Form.new(template: options[:pdf])
-signer = Formfiller::Signer.new(form: form,
+form = FormFiller::Form.new(template: options[:pdf])
+signer = FormFiller::Signer.new(form: form,
                                 signature: options[:signature],
                                 signature_field: options[:field])
 
