@@ -1,0 +1,37 @@
+#!/usr/bin/env ruby
+require "optparse"
+require_relative "../lib/formfiller"
+
+options = {:output => "/tmp/out.pdf", :field => "voter_signature"}
+
+parser = OptionParser.new do |opts|
+  opts.banner = "Usage: sign [options]"
+  
+  opts.on("-i", "--input pdf", "PDF to sign") do |pdf|
+    options[:pdf] = pdf
+  end
+
+  opts.on("-f", "--signature field", "name of signature field") do |field|
+    options[:field] = field
+  end
+
+  opts.on("-s", "--signature sig", "signature file") do |sig|
+    options[:signature] = sig
+  end
+
+  opts.on("-o", "-output file", "output file") do |output|
+    options[:output] = output
+  end
+end
+
+parser.parse!
+
+form = Formfiller::Form.new(template: options[:pdf])
+signer = Formfiller::Signer.new(form: form,
+                                signature: options[:signature],
+                                signature_field: options[:field])
+
+signer.sign
+form.save_as(options[:output])
+
+                                

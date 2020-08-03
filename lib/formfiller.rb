@@ -1,23 +1,13 @@
-require "formfiller/version"
-require "formfiller/itext"
+require_relative "formfiller/version"
+require_relative "formfiller/itext"
+require_relative "field"
 
 module Formfiller
   class Error < StandardError; end
   
   class Form
-    attr_accessor :pdf_doc, :pdf_form, :document, :template
-    # required Java imports
-    BYTE_STREAM = Rjb.import 'com.itextpdf.io.source.ByteArrayOutputStream'
-    PDF_READER = Rjb.import 'com.itextpdf.kernel.pdf.PdfReader'
-    PDF_WRITER = Rjb.import 'com.itextpdf.kernel.pdf.PdfWriter'
-    PDF_DOCUMENT = Rjb.import 'com.itextpdf.kernel.pdf.PdfDocument'
-    PDF_ACRO_FORM = Rjb.import 'com.itextpdf.forms.PdfAcroForm'
-    PDF_FORM_FIELD = Rjb.import 'com.itextpdf.forms.fields.PdfFormField'
-    IMAGE_DATA_FACTORY = Rjb.import 'com.itextpdf.io.image.ImageDataFactory'
-    IMAGE = Rjb.import 'com.itextpdf.layout.element.Image'
-    DOCUMENT = Rjb.import 'com.itextpdf.layout.Document'
-    Itext_Image = Rjb.import 'com.itextpdf.layout.element.Image'
-    ##
+    attr_accessor :byte_stream, :pdf_reader, :pdf_writer, :pdf_doc, :pdf_form, :document, :template
+
     # Opens a given PDF file and prepares it for modification.
     #
     def initialize(args)
@@ -25,13 +15,13 @@ module Formfiller
       raise IOError, "File at `#{args[:template]}' is not found" unless File.exist?(args[:template])
       @template = args[:template]
       begin
-        @byte_stream = BYTE_STREAM.new
-        @pdf_reader = PDF_READER.new @template
-        @pdf_writer = PDF_WRITER.new @byte_stream
-        @pdf_doc = PDF_DOCUMENT.new @pdf_reader, @pdf_writer
-        @pdf_form = PDF_ACRO_FORM.getAcroForm(@pdf_doc, true)
-        @form_fields = @pdf_form.getFormFields
-        @document = DOCUMENT.new(@pdf_doc)
+        @byte_stream = Itext::ByteStream.new
+        @pdf_reader = Itext::PdfReader.new template
+        @pdf_writer = Itext::PdfWriter.new byte_stream
+        @pdf_doc = Itext::PdfDocument.new pdf_reader, pdf_writer
+        @pdf_form = Itext::PdfAcroForm.getAcroForm(pdf_doc, true)
+        @form_fields = pdf_form.getFormFields
+        @document = Itext::Document.new(pdf_doc)
       rescue StandardError => ex
         raise "#{ex.message} (input file may be corrupt, incompatible, or may not have any forms)"
       end
@@ -229,28 +219,23 @@ module Formfiller
   end
 
   class Signer
-    attr_reader :form, :signature, :document
-    IMAGE_DATA_FACTORY = Rjb.import 'com.itextpdf.io.image.ImageDataFactory'
-    IMAGE = Rjb.import 'com.itextpdf.layout.element.Image'
-    DOCUMENT = Rjb.import 'com.itextpdf.layout.Document'
-    Itext_Image = Rjb.import 'com.itextpdf.layout.element.Image'
-    
+    attr_reader :form, :signature, :document, :signature_field_name
     def initialize(args)
       @form = args[:form]
       signature_file = args[:signature]
-      @signature = Itext_Image.new(IMAGE_DATA_FACTORY.create(signature_file))
-      @document = DOCUMENT.new(form.pdf_doc)
+      @signature = Itext::Image.new(Itext::ImageDataFactory.create(signature_file))
+      @document = Itext::Document.new(form.pdf_doc)
       @signature_field_name = args[:sigfield] || "voter_signature_af_image"
     end    
     
     def signature_position
-      form.field_position(@signature_field_name)
+      form.field_position(signature_field_name)
     end
     
     def sign
       pos = signature_position
       signature.setFixedPosition(pos[0], pos[1])
-      form.remove_field(@signature_field_name)
+      form.remove_field(signature_field_name)
       document.add(signature)
     end
   end
