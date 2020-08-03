@@ -18,7 +18,7 @@ module Formfiller
     DOCUMENT = Rjb.import 'com.itextpdf.layout.Document'
     Itext_Image = Rjb.import 'com.itextpdf.layout.element.Image'
     ##
-    # Opens a given fillable-pdf PDF file and prepares it for modification.
+    # Opens a given PDF file and prepares it for modification.
     #
     def initialize(args)
       
@@ -229,7 +229,7 @@ module Formfiller
   end
 
   class Signer
-    attr_reader :form, :signature
+    attr_reader :form, :signature, :document
     IMAGE_DATA_FACTORY = Rjb.import 'com.itextpdf.io.image.ImageDataFactory'
     IMAGE = Rjb.import 'com.itextpdf.layout.element.Image'
     DOCUMENT = Rjb.import 'com.itextpdf.layout.Document'
@@ -240,7 +240,18 @@ module Formfiller
       signature_file = args[:signature]
       @signature = Itext_Image.new(IMAGE_DATA_FACTORY.create(signature_file))
       @document = DOCUMENT.new(form.pdf_doc)
-      @sig_field_name = "voter_signature_af_image"
+      @signature_field_name = args[:sigfield] || "voter_signature_af_image"
     end    
+    
+    def signature_position
+      form.field_position(@signature_field_name)
+    end
+    
+    def sign
+      pos = signature_position
+      signature.setFixedPosition(pos[0], pos[1])
+      form.remove_field(@signature_field_name)
+      document.add(signature)
+    end
   end
 end
