@@ -37,14 +37,195 @@ module Formfiller
       end
     end
 
-    def fields
-      @form_fields
-    end
+  ##
+  # get dimensions of a form field
+  ##
+  def field_dimensions(key)
+    position = pdf_field(key).getWidgets().get(0).getRectangle()
+    width =  position.getAsNumber(2).getValue() - position.getAsNumber(0).getValue();
+    height = position.getAsNumber(3).getValue() - position.getAsNumber(1).getValue();
+    return width, height
+  end
 
-    def field(key)
-      field = fields.get(key.to_s)
-      raise "unknown key name `#{key}'" if field.nil?
+  def field_position(key)
+    position = pdf_field(key).getWidgets().get(0).getRectangle()
+    return position.getAsNumber(0).getValue(), position.getAsNumber(1).getValue()
+  end
+
+  ##
+  # Determines whether the form has any fields.
+  #
+  #   @return true if form has fields, false otherwise
+  #
+  def any_fields?
+    num_fields.positive?
+  end
+
+  ##
+  # Returns the total number of fillable form fields.
+  #
+  #   @return the number of fields
+  #
+  def num_fields
+    @form_fields.size
+  end
+
+  ##
+  # Retrieves the value of a field given its unique field name.
+  #
+  #   @param [String|Symbol] key the field name
+  #
+  #   @return the value of the field
+  #
+  def field(key)
+    pdf_field(key).getValueAsString
+  rescue NoMethodError
+    raise "unknown key name `#{key}'"
+  end
+
+  ##
+  # Retrieves the numeric type of a field given its unique field name.
+  #
+  #   @param [String|Symbol] key the field name
+  #
+  #   @return the type of the field
+  #
+  def field_type(key)
+    pdf_field(key).getFormType.toString
+  end
+
+  ##
+  # Retrieves a hash of all fields and their values.
+  #
+  #   @return the hash of field keys and values
+  #
+  def fields
+    iterator = @form_fields.keySet.iterator
+    map = {}
+    while iterator.hasNext
+      key = iterator.next.toString
+      map[key.to_sym] = field(key)
     end
+    map
+  end
+
+  ##
+  # Sets the value of a field given its unique field name and value.
+  #
+  #   @param [String|Symbol] key the field name
+  #   @param [String|Symbol] value the field value
+  #
+  def set_field(key, value)
+    pdf_field(key).setValue(value.to_s)
+  end
+
+  ##
+  # Sets the values of multiple fields given a set of unique field names and values.
+  #
+  #   @param [Hash] fields the set of field names and values
+  #
+  def set_fields(fields)
+    fields.each { |key, value| set_field key, value }
+  end
+
+  ##
+  # Renames a field given its unique field name and the new field name.
+  #
+  #   @param [String|Symbol] old_key the field name
+  #   @param [String|Symbol] new_key the field name
+  #
+  def rename_field(old_key, new_key)
+    pdf_field(old_key).setFieldName(new_key.to_s)
+  end
+
+  ##
+  # Removes a field from the document given its unique field name.
+  #
+  #   @param [String|Symbol] key the field name
+  #
+  def remove_field(key)
+    @pdf_form.removeField(key.to_s)
+  end
+
+  ##
+  # Returns a list of all field keys used in the document.
+  #
+  #   @return array of field names
+  #
+  def names
+    iterator = @form_fields.keySet.iterator
+    set = []
+    set << iterator.next.toString.to_sym while iterator.hasNext
+    set
+  end
+
+  ##
+  # Returns a list of all field values used in the document.
+  #
+  #   @return array of field values
+  #
+  def values
+    iterator = @form_fields.keySet.iterator
+    set = []
+    set << field(iterator.next.toString) while iterator.hasNext
+    set
+  end
+
+  ##
+  # Overwrites the previously opened PDF document and flattens it if requested.
+  #
+  #   @param [bool] flatten true if PDF should be flattened, false otherwise
+  #
+  def save(flatten: false)
+    tmp_file = SecureRandom.uuid
+    save_as(tmp_file, flatten: flatten)
+    File.rename tmp_file, @file_path
+  end
+
+  ##
+  # Saves the filled out PDF document in a given path and flattens it if requested.
+  #
+  #   @param [String] file_path the name of the PDF file or file path
+  #   @param [Hash] flatten: true if PDF should be flattened, false otherwise
+  #
+  def save_as(file_path, flatten: false)
+    if @file_path == file_path
+      save(flatten: flatten)
+    else
+      File.open(file_path, 'wb') { |f| f.write(finalize(flatten: flatten)) && f.close }
+    end
+  end
+
+  ##
+  # Closes the PDF document discarding all unsaved changes.
+  #
+  # @return [Boolean] true if document is closed, false otherwise
+  #
+  def close
+    @pdf_doc.close
+    @pdf_doc.isClosed
+  end
+
+  
+  private
+
+  ##
+  # Writes the contents of the modified fields to the previously opened PDF file.
+  #
+  #   @param [Hash] flatten: true if PDF should be flattened, false otherwise
+  #
+  def finalize(flatten: false)
+    @pdf_form.flattenFields if flatten
+    close
+    @byte_stream.toByteArray
+  end
+
+  def pdf_field(key)
+    field = @form_fields.get(key.to_s)
+    raise "unknown key name `#{key}'" if field.nil?
+    field
+  end
+
   end
 
   class Signer
