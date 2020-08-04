@@ -238,7 +238,6 @@ module FormFiller
       @signature = Itext::Image.new(Itext::ImageDataFactory.create(signature_file))
       @document = Itext::Document.new(form.pdf_doc)
       @signature_field_name = args[:sig_field] || "voter_signature_af_image"
-#      @signature_position = args[:sig_pos] || form.field_position(signature_field_name)
       pos = args[:sig_pos]
       if pos
         @signature_position = BoundingBox.new(pos[0], pos[1], pos[2], pos[3])
