@@ -15,6 +15,10 @@ parser = OptionParser.new do |opts|
     options[:field] = field
   end
 
+  opts.on("-p", "--position", "position to place signature") do |pos|
+    options[:pos] = pos
+  end
+
   opts.on("-s", "--signature sig", "signature file") do |sig|
     options[:signature] = sig
   end
@@ -29,7 +33,8 @@ parser.parse!
 form = FormFiller::Form.new(template: options[:pdf])
 signer = FormFiller::Signer.new(form: form,
                                 signature: options[:signature],
-                                signature_field: options[:field])
+                                sig_field: options[:field],
+                                sig_pos: options[:pos])
 
 signer.sign
 form.save_as(options[:output])

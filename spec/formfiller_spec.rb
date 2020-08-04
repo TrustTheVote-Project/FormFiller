@@ -12,6 +12,11 @@ RSpec.describe FormFiller::Form do
   it "has fields" do
     expect(form.fields.size).to eq(37)
   end
+
+  it "can determine the bounding box for a field" do
+    expect(form.bbox(:voter_signature_af_image).left).to eq(311.323)
+  end
+
 end
 
 RSpec.describe FormFiller::Signer do
@@ -22,7 +27,9 @@ RSpec.describe FormFiller::Signer do
   let(:signature_field) { "voter_signature" }
 
   it "can find the signature on the form" do
-    expect(signer.signature_position).to eq([311.323, 409.297])
+    expect(signer.signature_position.left).to eq(311.323)
+    signer.signature_position = FormFiller::BoundingBox.new(0,0, 300, 300)
+    expect(signer.signature_position.left).to eq(0)
   end
-                                         
+
 end
