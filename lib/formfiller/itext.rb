@@ -12,4 +12,6 @@ class Itext
     ImageDataFactory = Rjb.import 'com.itextpdf.io.image.ImageDataFactory'
     Image = Rjb.import 'com.itextpdf.layout.element.Image'
     Document = Rjb.import 'com.itextpdf.layout.Document'
+    XfdfObject = Rjb.import 'com.itextpdf.forms.xfdf.XfdfObject'
+    XfdfObjectFactory = Rjb.import 'com.itextpdf.forms.xfdf.XfdfObjectFactory'
 end

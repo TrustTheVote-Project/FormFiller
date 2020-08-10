@@ -1,12 +1,14 @@
 require_relative "formfiller/version"
 require_relative "formfiller/itext"
 require_relative "field"
+require "nokogiri"
 
 module FormFiller
   BoundingBox = Struct.new(:left, :bottom, :width, :height)
 
   class Error < StandardError; end
   
+
   class Form
     attr_accessor :byte_stream, :pdf_reader, :pdf_writer, :pdf_doc, :pdf_form, :document, :template
     
@@ -29,10 +31,28 @@ module FormFiller
       end
     end
     
+    def to_xfdf
+      x = Itext::XfdfObjectFactory.new.createXfdfObject(pdf_doc, "")
+      xfields = x.getFields
+      iterator = xfields.getFieldList.iterator
+      builder = Nokogiri::XML::Builder.new do |xml|
+        xml.xfdf(xmlns: "http://ns.adobe.com/xfdf/") do
+          xml.fields do
+            while iterator.hasNext
+              xfield = iterator.next
+              xml.field(name: xfield.getName) do
+                xml.value xfield.getValue
+              end
+            end
+          end
+        end
+      end
+      builder.to_xml
+    end
+
     ##
     # get dimensions of a form field
     ##
-
     def bbox(key)
       position = pdf_field(key).getWidgets().get(0).getRectangle()
       bbox = BoundingBox.new(position.getAsNumber(0).getValue(),
@@ -209,6 +229,11 @@ module FormFiller
       @pdf_doc.isClosed
     end
     
+    def pdf_field(key)
+      field = @form_fields.get(key.to_s)
+      raise "unknown key name `#{key}'" if field.nil?
+      field
+    end
     
     private
     
@@ -223,11 +248,6 @@ module FormFiller
       @byte_stream.toByteArray
     end
     
-    def pdf_field(key)
-      field = @form_fields.get(key.to_s)
-      raise "unknown key name `#{key}'" if field.nil?
-      field
-    end
   end
 
   class Signer
