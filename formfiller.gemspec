@@ -10,7 +10,7 @@ Gem::Specification.new do |spec|
   spec.description   = "Inspired by fillable-pdf."
   spec.homepage      = "https://github.com/cwulfman/FormFiller"
   spec.license       = "MIT"
-  spec.required_ruby_version = Gem::Requirement.new(">= 2.6.5")
+  spec.required_ruby_version = Gem::Requirement.new(">= 2.4.1")
 
 #  spec.metadata["allowed_push_host"] = "TODO: Set to 'http://mygemserver.com'"
 
