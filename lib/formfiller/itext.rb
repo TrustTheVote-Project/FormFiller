@@ -1,23 +1,20 @@
+class Itext
+end
 t = Thread.new {
   require 'rjb'
 
   Rjb.load(Dir.glob(File.expand_path('../../ext/*.jar', __dir__)).join(':'))
   
-  class Itext
-      ByteStream = Rjb.import 'com.itextpdf.io.source.ByteArrayOutputStream'
-      PdfReader = Rjb.import 'com.itextpdf.kernel.pdf.PdfReader'
-      PdfWriter = Rjb.import 'com.itextpdf.kernel.pdf.PdfWriter'
-      PdfDocument = Rjb.import 'com.itextpdf.kernel.pdf.PdfDocument'
-      PdfAcroForm = Rjb.import 'com.itextpdf.forms.PdfAcroForm'
-      PdfFormField = Rjb.import 'com.itextpdf.forms.fields.PdfFormField'
-      ImageDataFactory = Rjb.import 'com.itextpdf.io.image.ImageDataFactory'
-      Image = Rjb.import 'com.itextpdf.layout.element.Image'
-      Document = Rjb.import 'com.itextpdf.layout.Document'
-      XfdfObject = Rjb.import 'com.itextpdf.forms.xfdf.XfdfObject'
-      XfdfObjectFactory = Rjb.import 'com.itextpdf.forms.xfdf.XfdfObjectFactory'
-  end
-  return Itext
+  Itext::ByteStream = Rjb.import 'com.itextpdf.io.source.ByteArrayOutputStream'
+  Itext::PdfReader = Rjb.import 'com.itextpdf.kernel.pdf.PdfReader'
+  Itext::PdfWriter = Rjb.import 'com.itextpdf.kernel.pdf.PdfWriter'
+  Itext::PdfDocument = Rjb.import 'com.itextpdf.kernel.pdf.PdfDocument'
+  Itext::PdfAcroForm = Rjb.import 'com.itextpdf.forms.PdfAcroForm'
+  Itext::PdfFormField = Rjb.import 'com.itextpdf.forms.fields.PdfFormField'
+  Itext::ImageDataFactory = Rjb.import 'com.itextpdf.io.image.ImageDataFactory'
+  Itext::Image = Rjb.import 'com.itextpdf.layout.element.Image'
+  Itext::Document = Rjb.import 'com.itextpdf.layout.Document'
+  Itext::XfdfObject = Rjb.import 'com.itextpdf.forms.xfdf.XfdfObject'
+  Itext::XfdfObjectFactory = Rjb.import 'com.itextpdf.forms.xfdf.XfdfObjectFactory'
 }
-Itext = t.value
 t.join
-Itext
